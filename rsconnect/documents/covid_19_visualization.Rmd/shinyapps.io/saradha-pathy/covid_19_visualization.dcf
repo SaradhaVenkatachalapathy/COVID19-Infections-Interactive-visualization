@@ -1,0 +1,10 @@
+name: covid_19_visualization
+title:
+username:
+account: saradha-pathy
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 1948457
+bundleId: 2880948
+url: https://saradha-pathy.shinyapps.io/covid_19_visualization/
+when: 1584191588.37593

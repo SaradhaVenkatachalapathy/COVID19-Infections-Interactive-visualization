@@ -1,25 +1,20 @@
 ---
-title: "Coronavirus COVID-19 Infection Numbers"
+title: "Untitled"
 author: "Saradha Venkatachalapathy"
 date: "3/14/2020"
 output: html_document
-runtime: shiny
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(
-	echo = TRUE,
-	message = TRUE,
-	warning = TRUE
-)
-```
-```{r Loading libraries, message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
-library(shiny)
+knitr::opts_chunk$set(echo = TRUE)
+
 library(ggplot2)
 library(dplyr)
 library(DT)
 library(plotly)
+
 ```
+
 Source:[Johns Hopkins](https://engineering.jhu.edu/novel-coronavirus-information/).
 
 ```{r # Obtain and cleanup the data, echo=FALSE, paged.print=TRUE}

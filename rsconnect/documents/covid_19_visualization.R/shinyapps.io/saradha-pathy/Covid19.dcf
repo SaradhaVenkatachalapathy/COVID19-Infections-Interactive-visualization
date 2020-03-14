@@ -1,0 +1,13 @@
+name: Covid19
+title: Covid19
+username:
+account: saradha-pathy
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 1948477
+bundleId: 2880963
+url: https://saradha-pathy.shinyapps.io/Covid19/
+when: 1584191969.16139
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: covid_19_visualization.Rmd|LICENSE|README.md|Untitled.nb.html|Untitled.Rmd|wew.Rmd
