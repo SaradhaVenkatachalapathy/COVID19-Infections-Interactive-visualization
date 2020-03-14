@@ -1,15 +1,29 @@
-# Visualising global trends of CoVid-19
-# Author: Saradha Venkatachalapathy
-# Source:Johns Hopkins Whiting School of Engineering:https://github.com/CSSEGISandData/COVID-19
+---
+title: "Coronavirus COVID-19 Infection Numbers"
+author: "Saradha Venkatachalapathy"
+date: "3/14/2020"
+output: html_notebook
+runtime: shiny
+---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	message = TRUE,
+	warning = TRUE
+)
+```
+```{r Loading libraries, message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
 library(shiny)
 library(ggplot2)
 library(dplyr)
 library(DT)
 library(plotly)
-# Obtain and cleanup the data
-{
-  # Obtain country wise data for the number of confirmed coronavirus cases
+```
+Source:[Johns Hopkins](https://engineering.jhu.edu/novel-coronavirus-information/).
+
+```{r # Obtain and cleanup the data, echo=FALSE, paged.print=TRUE}
+# Obtain country wise data for the number of confirmed coronavirus cases
   {
     confirmed_cases<-read.csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv",check.names = FALSE, stringsAsFactors = F)
     confirmed_cases_reformatted = aggregate(confirmed_cases[,5:ncol(confirmed_cases)],
@@ -94,73 +108,16 @@ library(plotly)
                                     'Death Percent (%)','Deaths per day','Recovery Percent (%)','Recovery per day')
     rm(cases_time,dead,total,i,Last_disease_free_date,least_numb_cases,recovered)
   }
-}
+```
 
-
-# Define UI for application that draws a histogram
-ui <- fluidPage(
-  
-  # Application title
-  titlePanel("Coronavirus COVID-19 Infection Numbers"),
-  
-  h6('Source:Johns Hopkins'),
-  
-  varSelectInput("variable1", "Select an indicator:", combination_vector[2:ncol(combination_vector)]),
-  
-  plotlyOutput("Worldmap"),
-  
-  varSelectInput("variable", "Select a Country:", 
-                 confirmed_cases_reformatted[,c((ncol(confirmed_cases_reformatted)-1),1:(ncol(confirmed_cases_reformatted)-2))]
-                ),
-  
-  verticalLayout(br(),
-                 plotlyOutput("Covid19_raw_numbers"),
-                 br(),br(),
-                 plotlyOutput("Covid19_pie"),
-                 br(),br(),
-                 dataTableOutput("Covid19_raw_table"))
-  
+## Infection numbers around the world
+```{r eruptions, echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
+inputPanel(
+  varSelectInput("variable1", "Select an indicator:", combination_vector[2:ncol(combination_vector)])
 )
 
-
-# Define server logic required to draw a histogram
-server <- function(input, output) {
-  
-  output$Covid19_raw_table <- DT::renderDataTable({
-    datatable(combination_vector, selection = 'single')
-  })
-  
-  output$Covid19_raw_numbers <- renderPlotly({
-    g<- ggplot()+
-      geom_line(data= confirmed_cases_reformatted, aes(x=Date, y=!!input$variable,color="Total")) + 
-      geom_line(data= dead_cases_reformatted, aes(x=Date, y=!!input$variable,color="Dead")) + 
-      geom_line(data= recovered_cases_reformatted, aes(x=Date, y=!!input$variable,color="Recovered")) +
-      scale_color_manual(values = c(Total= "blue",Dead="red", Recovered="green4" )) +
-      labs(color="Indices") +
-      ylab("Number of people")+ xlab("Time")+ theme_bw()+
-      theme(text = element_text(size=10)) 
-    ggplotly(g)
-  })
-  
-  
-  output$Covid19_pie<- renderPlotly({
-    df<-data.frame(value=c(combination_vector[which(combination_vector$Country==input$variable),]$Active,
-                           combination_vector[which(combination_vector$Country==input$variable),]$Recovered,
-                           combination_vector[which(combination_vector$Country==input$variable),]$Dead),
-                   group=c("Active","Recovered","Dead"))
-    df$color <- c('blue', 'green','red')
-    
-    plot_ly(df, labels =~group, values =~value, 
-            marker = list(colors =df$color, showlegend = TRUE),
-            type = 'pie') %>% layout(title = "Current numbers",
-                                     xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
-                                     yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
-    
-    
-  })
-  
-  output$Worldmap<-renderPlotly({
-    # light grey boundaries
+renderPlotly({
+  # light grey boundaries
     l <- list(color = toRGB("grey"), width = 0.5)
     
     # specify map projection/options
@@ -181,9 +138,51 @@ server <- function(input, output) {
     )
     
     fig
-  })
-}
+})
+```
 
-# Run the application 
-shinyApp(ui = ui, server = server)
+## Infection rates
+
+```{r Infectionrates country-wise, echo=FALSE}
+inputPanel(
+  varSelectInput("variable", "Select a Country:", 
+                 confirmed_cases_reformatted[,c((ncol(confirmed_cases_reformatted)-1),1:(ncol(confirmed_cases_reformatted)-2))])
+)
+
+renderPlotly({
+    g<- ggplot()+
+      geom_line(data= confirmed_cases_reformatted, aes(x=Date, y=!!input$variable,color="Total")) + 
+      geom_line(data= dead_cases_reformatted, aes(x=Date, y=!!input$variable,color="Dead")) + 
+      geom_line(data= recovered_cases_reformatted, aes(x=Date, y=!!input$variable,color="Recovered")) +
+      scale_color_manual(values = c(Total= "blue",Dead="red", Recovered="green4" )) +
+      labs(color="Indices") +
+      ylab("Number of people")+ xlab("Time")+ theme_bw()+
+      theme(text = element_text(size=10)) 
+    ggplotly(g)
+  })
+
+renderPlotly({
+    df<-data.frame(value=c(combination_vector[which(combination_vector$Country==input$variable),]$Active,
+                           combination_vector[which(combination_vector$Country==input$variable),]$Recovered,
+                           combination_vector[which(combination_vector$Country==input$variable),]$Dead),
+                   group=c("Active","Recovered","Dead"))
+    df$color <- c('blue', 'green','red')
+    
+    plot_ly(df, labels =~group, values =~value, 
+            marker = list(colors =df$color, showlegend = TRUE),
+            type = 'pie') %>% layout(title = "Current numbers",
+                                     xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+                                     yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+    
+    
+  })
+```
+
+## Data
+```{r dataset country-wise, echo=FALSE}
+DT::renderDataTable({
+    datatable(combination_vector, selection = 'single')
+  })
+```
+
 
