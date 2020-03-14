@@ -7,7 +7,6 @@ library(ggplot2)
 library(dplyr)
 library(DT)
 library(plotly)
-
 # Obtain and cleanup the data
 {
   # Obtain country wise data for the number of confirmed coronavirus cases
@@ -21,6 +20,7 @@ library(plotly)
     colnames(confirmed_cases_reformatted)<-temp
     confirmed_cases_reformatted$World<-apply(confirmed_cases_reformatted,1,sum)
     confirmed_cases_reformatted$Date<-as.Date(paste(lapply(rownames(confirmed_cases_reformatted), function(x) substr(x, 1, nchar(x)-2)),2020,sep=""), "%m/%d/%Y")
+    rownames(confirmed_cases_reformatted)<-as.numeric(1:nrow(confirmed_cases_reformatted))
     rm(temp,confirmed_cases)
   }
   
@@ -67,25 +67,33 @@ library(plotly)
       dead<-dead_cases_reformatted[nrow(dead_cases_reformatted),i]
       recovered<-recovered_cases_reformatted[nrow(recovered_cases_reformatted),i]
       cases_time<-confirmed_cases_reformatted[,i]
+      duration<-as.numeric(max(confirmed_cases_reformatted$Date)-(Last_disease_free_date+1),units="days")
+      duration<-ifelse(duration>0,duration,1)
       combination_vector[i,1]<-colnames(confirmed_cases_reformatted)[i]
       combination_vector[i,2]<-total
       combination_vector[i,3]<-recovered
       combination_vector[i,4]<-total-recovered
       combination_vector[i,5]<-dead
-      combination_vector[i,6]<-Last_disease_free_date+1
-      combination_vector[i,7]<-round((total/as.numeric(max(confirmed_cases_reformatted$Date)-(Last_disease_free_date+1),units="days"))*100,2)
-      combination_vector[i,8]<-confirmed_cases_reformatted$Date[nrow(confirmed_cases_reformatted)]-
+      combination_vector[i,6]<-total-confirmed_cases_reformatted[nrow(confirmed_cases_reformatted)-1,i]
+      
+      combination_vector[i,7]<-Last_disease_free_date+1
+      combination_vector[i,8]<-duration
+      
+      combination_vector[i,9]<-round((total/duration),2)
+      combination_vector[i,10]<-confirmed_cases_reformatted$Date[nrow(confirmed_cases_reformatted)]-
         max(confirmed_cases_reformatted$Date[which(abs(cases_time-total/2)==min(abs(cases_time-total/2)))])
       
-      combination_vector[i,9]<-round((dead/total)*100,2)
-      combination_vector[i,10]<-round((dead/as.numeric(max(confirmed_cases_reformatted$Date)-(Last_disease_free_date+1),units="days"))*100,2)
-      combination_vector[i,11]<-round((recovered/total)*100,2)
-      combination_vector[i,12]<-round((recovered/as.numeric(max(confirmed_cases_reformatted$Date)-(Last_disease_free_date+1),units="days"))*100,2)
+      combination_vector[i,11]<-round((dead/total)*100,2)
+      combination_vector[i,12]<-round((dead/duration),2)
+      combination_vector[i,13]<-round((recovered/total)*100,2)
+      combination_vector[i,14]<-round((recovered/duration),2)
       
     } 
-    colnames(combination_vector)<-c('Country','Total','Recovered', 'Active', 'Dead','First Case','Infections per day', 'Infection Doubling time(days)', 
+    colnames(combination_vector)<-c('Country','Total','Recovered', 'Active', 'Dead','Recent Infections',
+                                    'First Case','Duration of Infection',
+                                    'Infections per day', 'Infection Doubling time(days)', 
                                     'Death Percent (%)','Deaths per day','Recovery Percent (%)','Recovery per day')
-    
+    rm(cases_time,dead,total,i,Last_disease_free_date,least_numb_cases,recovered)
   }
 }
 
@@ -96,18 +104,22 @@ ui <- fluidPage(
   # Application title
   titlePanel("COVID-19 Infection Numbers"),
   
-  varSelectInput("variable1", "Variable:", combination_vector[2:5]),
+  h6('Source:Johns Hopkins'),
+  
+  varSelectInput("variable1", "Select an indicator:", combination_vector[2:ncol(combination_vector)]),
   
   plotlyOutput("Worldmap"),
   
-  varSelectInput("variable", "Variable:", confirmed_cases_reformatted),
+  varSelectInput("variable", "Select a Country:", 
+                 confirmed_cases_reformatted[,c((ncol(confirmed_cases_reformatted)-1),1:(ncol(confirmed_cases_reformatted)-2))]
+                ),
   
-  verticalLayout( 
-                   dataTableOutput("Covid19_raw_table"),
-                 br(),
+  verticalLayout(br(),
                  plotlyOutput("Covid19_raw_numbers"),
                  br(),br(),
-                 plotlyOutput("Covid19_pie"))
+                 plotlyOutput("Covid19_pie"),
+                 br(),br(),
+                 dataTableOutput("Covid19_raw_table"))
   
 )
 
@@ -116,7 +128,7 @@ ui <- fluidPage(
 server <- function(input, output) {
   
   output$Covid19_raw_table <- DT::renderDataTable({
-    datatable(combination_vector[which(combination_vector$Country==input$variable),], selection = 'single')
+    datatable(combination_vector, selection = 'single')
   })
   
   output$Covid19_raw_numbers <- renderPlotly({
@@ -149,14 +161,23 @@ server <- function(input, output) {
   })
   
   output$Worldmap<-renderPlotly({
-    fig <- plot_geo(data.frame(Country=combination_vector$Country,quant=na.omit(combination_vector[,which(colnames(combination_vector)==input$variable1)])))
+    # light grey boundaries
+    l <- list(color = toRGB("grey"), width = 0.5)
+    
+    # specify map projection/options
+    g <- list(
+      showframe = FALSE,
+      showcoastlines = FALSE,
+      projection = list(type = 'Mercator')
+    )
+    fig <- plot_geo(data.frame(Country=combination_vector$Country,quant=combination_vector[,which(colnames(combination_vector)==input$variable1)]))
     fig <- fig %>% add_trace(
       z = ~quant, color = ~quant, colors = 'Reds',
-      text = ~Country, locations = combination_vector$Country, locationmode='country names',marker = list(line = l)
+      text = ~Country, locations = combination_vector$Country, locationmode='country names' 
     )
-    fig <- fig %>% colorbar(title = input$variable1)
+    fig <- fig %>% colorbar(title = '')
     fig <- fig %>% layout(
-      title = 'Total number of CoVid-19 patients <br>Source:<a href="https://engineering.jhu.edu/novel-coronavirus-information/">Johns Hopkins</a>',
+      title = ' ',
       geo = g
     )
     
