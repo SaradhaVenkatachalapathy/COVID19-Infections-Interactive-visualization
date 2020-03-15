@@ -17,6 +17,7 @@ library(plotly)
                                             FUN = sum)
     temp<-confirmed_cases_reformatted$Group.1
     confirmed_cases_reformatted<-as.data.frame(t(as.matrix(confirmed_cases_reformatted[,5:ncol(confirmed_cases_reformatted)])))
+    confirmed_cases_reformatted<-confirmed_cases_reformatted[complete.cases(confirmed_cases_reformatted), ]
     colnames(confirmed_cases_reformatted)<-temp
     confirmed_cases_reformatted$World<-apply(confirmed_cases_reformatted,1,sum)
     confirmed_cases_reformatted$Date<-as.Date(paste(lapply(rownames(confirmed_cases_reformatted), function(x) substr(x, 1, nchar(x)-2)),2020,sep=""), "%m/%d/%Y")
@@ -32,6 +33,7 @@ library(plotly)
                                        FUN = sum)
     temp<-dead_cases_reformatted$Group.1
     dead_cases_reformatted<-as.data.frame(t(as.matrix(dead_cases_reformatted[,5:ncol(dead_cases_reformatted)])))
+    dead_cases_reformatted<-dead_cases_reformatted[complete.cases(dead_cases_reformatted), ]
     colnames(dead_cases_reformatted)<-temp
     dead_cases_reformatted$World<-apply(dead_cases_reformatted,1,sum)
     dead_cases_reformatted$Date<-as.Date(paste(lapply(rownames(dead_cases_reformatted), function(x) substr(x, 1, nchar(x)-2)),2020,sep=""), "%m/%d/%Y")
@@ -46,6 +48,7 @@ library(plotly)
                                             FUN = sum)
     temp<-recovered_cases_reformatted$Group.1
     recovered_cases_reformatted<-as.data.frame(t(as.matrix(recovered_cases_reformatted[,5:ncol(recovered_cases_reformatted)])))
+    recovered_cases_reformatted<-recovered_cases_reformatted[complete.cases(recovered_cases_reformatted), ]
     colnames(recovered_cases_reformatted)<-temp
     recovered_cases_reformatted$World<-apply(recovered_cases_reformatted,1,sum)
     recovered_cases_reformatted$Date<-as.Date(paste(lapply(rownames(recovered_cases_reformatted), function(x) substr(x, 1, nchar(x)-2)),2020,sep=""), "%m/%d/%Y")
