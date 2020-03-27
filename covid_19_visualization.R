@@ -11,7 +11,7 @@ library(plotly)
 {
   # Obtain country wise data for the number of confirmed coronavirus cases
   {
-    confirmed_cases<-read.csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv",check.names = FALSE, stringsAsFactors = F)
+    confirmed_cases<-read.csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv",check.names = FALSE, stringsAsFactors = F)
     confirmed_cases_reformatted = aggregate(confirmed_cases[,5:ncol(confirmed_cases)],
                                             by = list(confirmed_cases$`Country/Region`),
                                             FUN = sum)
@@ -27,7 +27,7 @@ library(plotly)
   
   # Obtain country wise data for the number of deaths from coronavirus
   {
-    dead_cases<-read.csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Deaths.csv",check.names = FALSE, stringsAsFactors = F)
+    dead_cases<-read.csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv",check.names = FALSE, stringsAsFactors = F)
     dead_cases_reformatted = aggregate(dead_cases[,5:ncol(dead_cases)],
                                        by = list(dead_cases$`Country/Region`),
                                        FUN = sum)
@@ -42,7 +42,7 @@ library(plotly)
   
   # Obtain country wise data for the number of recoved cases from coronavirus
   {
-    recovered_cases<-read.csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Recovered.csv",check.names = FALSE, stringsAsFactors = F)
+    recovered_cases<-read.csv("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv",check.names = FALSE, stringsAsFactors = F)
     recovered_cases_reformatted = aggregate(recovered_cases[,5:ncol(recovered_cases)],
                                             by = list(recovered_cases$`Country/Region`),
                                             FUN = sum)
